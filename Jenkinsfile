@@ -23,10 +23,11 @@ pipeline{
 }
         }
         stage("BUILDING"){
-             when{
-                expression{//this variable avaible only on mutli branch pipeline jobs
-                    BRANCH_NAME == 'master'
-                }
+           //  when{
+               // expression{//this variable avaible only on mutli branch pipeline jobs
+               //     BRANCH_NAME == 'master'
+              //  }
+      //  }
             steps{
           script{
               
