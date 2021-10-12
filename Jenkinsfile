@@ -1,70 +1,59 @@
 pipeline{
-    agent any
- 
+    agent none
     tools{
         jdk 'myjava'
         maven 'mymaven'
     }
+    parameters{
+        choice(name:'VERSION',choices:['1.1.0','1.2.0','1.3.0'],description:'version of the code')
+        booleanParam(name: 'executeTests',defaultValue: true,description:'tc validity')
+    }
     stages{
         stage("COMPILE"){
+            agent {label 'linux_slave'}
             steps{
-               script{
-                echo "compiling the code"
-                git 'https://github.com/preethid/addressbook.git'
-                sh 'mvn compile'
+                script{
+                    echo "Compiling the code"
+                    sh 'mvn compile'
+                }
             }
-}
         }
         stage("UNITTEST"){
-            steps{
-               script{
-              echo  "testing the app"
-              sh 'mvn test'
-            }
-}
-        }
-        stage("BUILDING"){
+            agent any
             when{
-                expression{//this variable avaible only on mutli branch pipeline jobs
-                    BRANCH_NAME == 'master'
+                expression{
+                    params.executeTests == true
                 }
             }
             steps{
-          script{
-               echo "building the app"
-               sh 'mvn package'
-            }
-}
-        }
-        stage("BUILD THE DOCKER IMAGE"){
-             when{
-                expression{//this variable avaible only on mutli branch pipeline jobs
-                    BRANCH_NAME == 'master'
+                script{
+                    echo "Testing the code"
+                    sh 'mvn test'
                 }
             }
-            steps{
-             script{
-               echo "building the docker image"
-               withCredentials([usernamePassword(credentialsId: 'docker-hub',
-                    passwordVariable: 'PASS', usernameVariable: 'USER')]){
-                   sh 'sudo docker build -t devopstrainer/myrepoprivate:$BUILD_NUMBER .'
-                   sh 'sudo docker login -u $USER -p $PASS'
-                   sh 'sudo docker push devopstrainer/myrepoprivate:$BUILD_NUMBER'
-               }
-            }
-          }
-        }
-        stage("DEPLOY"){
-             when{
-                expression{//this variable avaible only on mutli branch pipeline jobs
-                    BRANCH_NAME == 'master'
+            post{
+                always{
+                    junit 'target/surefire-reports/*.xml'
                 }
             }
+        }
+         stage("PACKAGE"){
+             agent {label 'linux_slave'}
             steps{
-           script{
-               echo "deploying the app"
+                script{
+                    echo "Packaging the code"
+                    sh 'mvn package'
+                }
             }
         }
-     }
+         stage("DEPLOY"){
+            agent any
+            steps{
+                script{
+                    echo "Deploying the app"
+                    echo "Deploying version ${params.VERSION}"
+                }
+            }
+        }
     }
 }
