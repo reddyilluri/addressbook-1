@@ -22,6 +22,7 @@ pipeline{
             expression{
                 BRANCH_NAME =='master'
             }
+             }
               steps{
                 script{
              echo "Run the unit test"
