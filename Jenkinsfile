@@ -20,11 +20,7 @@ pipeline{
                     }
         stage("UnitTest"){
             agent any
-             when{
-            expression{
-                BRANCH_NAME =='master'
-            }
-             }
+            
               steps{
                 script{
              echo "Run the unit test"
@@ -48,11 +44,7 @@ pipeline{
     }
         }
     stage("Deploy"){
-        when{
-            expression{
-                BRANCH_NAME =='master'
-            }
-        }
+      
         steps{
             script{
                 echo "Deploying the app"
