@@ -1,5 +1,5 @@
 pipeline{
-    agent any
+    agent none
     tools{
         jdk 'myjava'
         maven 'mymaven'
@@ -9,6 +9,7 @@ pipeline{
     }
     stages{
         stage("COMPILE"){
+            agent {label 'linux_slave'}
             steps{
                 script{
                      echo "Compiling the code"
@@ -18,6 +19,7 @@ pipeline{
             }
                     }
         stage("UnitTest"){
+            agent any
              when{
             expression{
                 BRANCH_NAME =='master'
@@ -36,6 +38,7 @@ pipeline{
               }
         }
         stage("Package"){
+            agent {label 'linux_slave'
               steps{
                 script{
               echo "Building the app"
